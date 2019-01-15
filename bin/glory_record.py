@@ -1,23 +1,28 @@
 import sys, os.path, tempfile, shutil, datetime, json, traceback
 from glory_count import count_words
 
-def load_targets(conf_path):
+def load_config(conf_path):
 
 	if not os.path.isfile(conf_path):
 		raise Exception("config file cannot be found (path: '%s')" % conf_path)
 
+	deadlines = []
 	targets = []
 
 	with open(conf_path, 'r') as f:
 		for line in f:
-			if line.startswith('#'):
+			line = line.strip()
+			if line.startswith('#') or len(line) == 0:
 				continue
-			name, separator, path = line.rstrip().partition(' ')
+			key, separator, value = line.rstrip().partition(' ')
 			if separator != ' ':
 				raise Exception("config file is broken (path: '%s')" % conf_path)
-			targets.append((name, path))
+			if key.endswith(':'):
+				deadlines.append((key[0:-1], value))
+			else:
+				targets.append((key, value))
 
-	return targets
+	return (deadlines, targets)
 
 def format_record(now, name, words):
 	return "%s %s %s" % (now.replace(microsecond=0).isoformat(), name, words)
@@ -67,13 +72,14 @@ def load_records(records_path):
 
 	return records
 
-def save_json_file(json_path, records):
+def save_json_file(json_path, records, deadlines):
 
 	record_points = sorted(set(now for now, _, _ in records))
 	names = sorted(set(name for _, name, _ in records))
 	record_dict = dict([((now, name), words) for now, name, words in records])
 
 	obj = {
+		'deadlines': sorted([{ 'name': d[0], 'at': d[1] } for d in deadlines]),
 		'record_points': sorted(record_points),
 		'records': [{
 			'name': name,
@@ -84,10 +90,10 @@ def save_json_file(json_path, records):
 	with open(json_path, 'w') as f:
 		json.dump(obj, f)
 
-def main(target_conf_path, records_path, json_path):
+def main(config_path, records_path, json_path):
 
 	now = datetime.datetime.now()
-	targets = load_targets(target_conf_path)
+	deadlines, targets = load_config(config_path)
 	new_records = []
 
 	for name, path in targets:
@@ -102,16 +108,16 @@ def main(target_conf_path, records_path, json_path):
 	append_records(records_path, new_records)
 
 	all_records = load_records(records_path)
-	save_json_file(json_path, all_records)
+	save_json_file(json_path, all_records, deadlines)
 
 if __name__ == '__main__':
 
 	if len(sys.argv) < 4:
-		sys.stderr.write("usage: %s <target_conf_path> <records_path> <json_path>\n" % sys.argv[0])
+		sys.stderr.write("usage: %s <config_path> <records_path> <json_path>\n" % sys.argv[0])
 		exit(1)
 
-	target_conf_path = sys.argv[1]
+	config_path = sys.argv[1]
 	records_path = sys.argv[2]
 	json_path = sys.argv[3]
 
-	main(target_conf_path, records_path, json_path)
+	main(config_path, records_path, json_path)

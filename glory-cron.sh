@@ -8,7 +8,7 @@ GLORY_DEST_DIR="/var/www/html/glory"
 work_dir="$(dirname "$0")"
 cd "$work_dir"
 
-thesis_file_list_path="thesis_file_list.txt"
+config_path="config.txt"
 records_path="data/records.txt"
 records_json_path="data/records.json"
 glory_dest="$GLORY_DEST_USER:$GLORY_DEST_DIR"
@@ -17,7 +17,7 @@ mkdir -p "$(dirname "$records_path")"
 mkdir -p "$(dirname "$records_json_path")"
 
 echo "generating records..."
-sudo python2 "bin/glory_record.py" "$thesis_file_list_path" "$records_path" "$records_json_path"
+sudo python2 "bin/glory_record.py" "$config_path" "$records_path" "$records_json_path"
 echo "generated"
 
 echo "transferring files..."
