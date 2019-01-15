@@ -100,7 +100,7 @@ function draw_graph(data) {
 	const options = {
 		hAxis: {
 			title: '',
-			format: 'MM/dd hh:mm',
+			format: 'MM/dd HH:mm',
 			viewWindow: { min: min_date, max: max_date },
 		},
 		vAxis: {
@@ -109,8 +109,8 @@ function draw_graph(data) {
 			viewWindow: { min: 0.0, max: max_words_ceiled },
 		},
 		legend: { position: 'right'},
-		lineWidth: 3,
-		pointSize: 6,
+		lineWidth: 2,
+		pointSize: 2,
 		chartArea: { left: '10%', top: '5%', right: '20%', bottom: '10%' },
 		fontSize: 16,
 		backgroundColor: { fill: 'transparent' },
@@ -121,7 +121,8 @@ function draw_graph(data) {
 	let chart = new google.visualization.LineChart(elem);
 
 	let date_formatter = new google.visualization.DateFormat({
-		pattern: "yyyy/MM/dd hh:mm"
+		pattern: "yyyy/MM/dd HH:mm",
+		timeZone: 9,
 	});
 	date_formatter.format(table, 0);
 	chart.draw(table, options);
