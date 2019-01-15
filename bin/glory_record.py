@@ -35,6 +35,9 @@ def parse_record(txt):
 		raise Exception("record is broken")
 	return (now, name, int(words))
 
+def parse_datetime(text):
+	return datetime.datetime.strptime(text, '%Y-%m-%dT%H:%M:%S')
+
 def append_records(records_path, new_records):
 
 	txt = ""
@@ -95,6 +98,10 @@ def main(config_path, records_path, json_path):
 	now = datetime.datetime.now()
 	deadlines, targets = load_config(config_path)
 	new_records = []
+
+	# stop counting	if the all deadlines are over
+	if len(deadlines) > 0 and max(map(lambda d: parse_datetime(d[1]), deadlines)) < now:
+		return
 
 	for name, path in targets:
 		try:
