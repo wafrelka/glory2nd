@@ -11,6 +11,10 @@ function str2date(s) {
 	return new Date(year, month, day, hour, minute, second);
 }
 
+function between(cur, left, right) {
+	return (left <= cur) && (cur <= right);
+}
+
 function fetch_values(post_func) {
 	fetch(VALUES_URL, {cache: 'no-store'})
 		.then(function(res) { return res.json(); })
@@ -21,15 +25,54 @@ function fetch_values(post_func) {
 		.catch(error => console.error(error));
 }
 
-function show_values() {
-	data = filter_values(full_data);
+function show_values(selector) {
+	let data = filter_values(full_data, selector);
 	draw_detail(data);
 	draw_graph_async(data);
 }
 
-function filter_values(full_data) {
-	// FIXME: implement
-	return full_data;
+function filter_values(data, selector) {
+
+	const HOUR_IN_MS = 1000 * 60 * 60;
+
+	let all_point_dates = data['record_points'].map(s => str2date(s));
+	let all_deadline_dates = data['deadlines'].map(d => str2date(d['at']));
+	let all_dates = all_point_dates.concat(all_deadline_dates);
+
+	let latest_point_date = new Date(Math.max.apply(null, all_point_dates));
+	let latest_date = new Date(Math.max.apply(null, all_dates));
+	let oldest_date = new Date(Math.min.apply(null, all_dates));
+
+	let min_date = null;
+	let max_date = null;
+
+	if(selector == "#day") {
+		min_date = latest_point_date - HOUR_IN_MS * (24 + 1);
+		max_date = latest_point_date - (-HOUR_IN_MS) * 1;
+	} else if(selector == "#week") {
+		min_date = latest_point_date - HOUR_IN_MS * 24 * (7 + 1);
+		max_date = latest_point_date - (-HOUR_IN_MS) * 24 * 1;
+	} else {
+		min_date = oldest_date - HOUR_IN_MS * 24;
+		max_date = latest_date - (-HOUR_IN_MS) * 24;
+	}
+
+	min_date = new Date(min_date);
+	max_date = new Date(max_date);
+
+	let filtered = {
+		"records": data["records"].map(r =>
+			({
+				"name": r["name"],
+				"values": r["values"].filter((v, idx) =>
+					between(str2date(data["record_points"][idx]), min_date, max_date)
+				),
+			})),
+		"record_points": data["record_points"].filter(p => between(str2date(p), min_date, max_date)),
+		"deadlines": data["deadlines"].filter(d => between(str2date(d["at"]), min_date, max_date)),
+	};
+
+	return filtered;
 }
 
 function draw_detail(data) {
@@ -130,5 +173,11 @@ function draw_graph(data) {
 
 google.charts.load('current', {packages: ['corechart']});
 document.addEventListener("DOMContentLoaded", function(event) {
-	fetch_values(function(){show_values();});
+	fetch_values(function(){show_values(location.hash);});
+	let links = document.querySelectorAll("#tabs a");
+	for (l of links) {
+		l.addEventListener("click", function(ev) {
+			show_values(ev.target.hash);
+		});
+	}
 });
