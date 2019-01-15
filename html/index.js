@@ -46,6 +46,7 @@ function draw_graph(data) {
 	let table = new google.visualization.DataTable();
 
 	table.addColumn('date', 'date');
+	table.addColumn({type: 'string', role: 'annotation'});
 	for(let item of data['records']) {
 		table.addColumn('number', item['name']);
 	}
@@ -53,13 +54,41 @@ function draw_graph(data) {
 	for(let idx = 0; idx < data['record_points'].length; idx += 1) {
 
 		let now = str2date(data['record_points'][idx]);
-		let row = [now];
+		let annotation = null;
+
+		for(let d of data['deadlines']) {
+			if(now == d['at']) {
+				annotation = d['name'];
+				break;
+			}
+		}
+
+		let row = [now, annotation];
 
 		for(let item of data['records']) {
 			row.push(item['values'][idx]);
 		}
 
 		table.addRow(row);
+	}
+
+	let all_dates =
+		data['record_points']
+		.concat(data['deadlines'].map(d => d['at']))
+		.map(s => str2date(s));
+
+	let HOUR_IN_MS = 1000 * 60 * 60;
+	let min_date = new Date(Math.min.apply(null, all_dates));
+	let max_date = new Date(Math.max.apply(null, all_dates) + HOUR_IN_MS * 6);
+
+	for(let d of data['deadlines']) {
+		if(data['record_points'].findIndex(function(elem){ return elem == d['at']; }) < 0) {
+			row = [str2date(d['at']), "deadline (" + d['name'] + ")"];
+			for(let item of data['records']) {
+				row.push(null);
+			}
+			table.addRow(row);
+		}
 	}
 
 	let max_words = 0;
@@ -69,7 +98,11 @@ function draw_graph(data) {
 	let max_words_ceiled = Math.ceil(max_words / 1000.0 + 1) * 1000.0;
 
 	const options = {
-		hAxis: { title: '', format: 'MM/dd hh:mm' },
+		hAxis: {
+			title: '',
+			format: 'MM/dd hh:mm',
+			viewWindow: { min: min_date, max: max_date },
+		},
 		vAxis: {
 			title: '',
 			ticks: Array.from({length: Math.round(max_words_ceiled / 1000.0) + 1}, (v, idx) => idx * 1000),
@@ -81,6 +114,7 @@ function draw_graph(data) {
 		chartArea: { left: '10%', top: '5%', right: '20%', bottom: '10%' },
 		fontSize: 16,
 		backgroundColor: { fill: 'transparent' },
+		annotations: { style: 'line' }
 	};
 
 	let elem = document.getElementById('graph');
