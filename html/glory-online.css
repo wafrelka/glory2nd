@@ -10,3 +10,4 @@ h1 { background-color: rgb(234, 244, 250); width: 100%; padding: 0.5rem 0.8rem;
 	box-sizing: border-box; border-left: rgb(144, 201, 248) 1.2rem solid; margin: 4rem 0 0; }
 #tabs a { color: rgb(15, 15, 15); font-size: 24px; text-decoration: none; }
 #tabs { color: rgb(212, 212, 212); font-size: 24px; text-decoration: none; }
+#tabs a.hidden-tab { color: rgb(212, 212, 212); }

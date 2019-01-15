@@ -31,6 +31,21 @@ function show_values(selector) {
 	draw_graph_async(data);
 }
 
+function update_tab_color(selector) {
+
+	let links = document.querySelectorAll("#tabs a");
+	for(let l of links) {
+		l.classList.add('hidden-tab');
+	}
+
+	let l = document.querySelector("#tabs a[href=\"#all\"]");
+	if(selector == "#day" || selector == "#week") {
+		l = document.querySelector("#tabs a[href=\"" + selector + "\"]");
+	}
+
+	l.classList.remove('hidden-tab');
+}
+
 function filter_values(data, selector) {
 
 	const HOUR_IN_MS = 1000 * 60 * 60;
@@ -177,7 +192,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	let links = document.querySelectorAll("#tabs a");
 	for (l of links) {
 		l.addEventListener("click", function(ev) {
+			update_tab_color(ev.target.hash);
 			show_values(ev.target.hash);
 		});
 	}
+	update_tab_color(location.hash);
 });
