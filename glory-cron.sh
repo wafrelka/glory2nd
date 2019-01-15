@@ -22,8 +22,8 @@ echo "generated"
 
 echo "transferring files..."
 ssh "$GLORY_DEST_USER" mkdir -p "$GLORY_DEST_DIR" > /dev/null
-scp -r "html/index.html" "$glory_dest/index.html" > /dev/null
-scp -r "html/index.css" "$glory_dest/index.css" > /dev/null
-scp -r "html/index.js" "$glory_dest/index.js" > /dev/null
+scp -r "html/glory-online.html" "$glory_dest/glory-online.html" > /dev/null
+scp -r "html/glory-online.css" "$glory_dest/glory-online.css" > /dev/null
+scp -r "html/glory-online.js" "$glory_dest/glory-online.js" > /dev/null
 scp -r "$records_json_path" "$glory_dest/records.json" > /dev/null
 echo "transferred"
