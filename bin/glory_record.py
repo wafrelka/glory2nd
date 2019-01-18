@@ -16,11 +16,14 @@ TIME_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 TIMEZONE = FixedOffset(+9, "JST")
 UNIX_EPOCH = datetime.datetime(1970, 1, 1).replace(tzinfo=FixedOffset(0, "UTC"))
 
+def total_seconds(delta):
+	return (delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * 10**6) / 10**6
+
 def parse_datetime(text):
 	return datetime.datetime.strptime(text, TIME_FORMAT).replace(tzinfo=TIMEZONE)
 
 def unixtime(dt):
-	return int((dt - UNIX_EPOCH).total_seconds())
+	return int(total_seconds(dt - UNIX_EPOCH))
 
 def load_config(conf_path):
 
