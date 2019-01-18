@@ -2,6 +2,10 @@ var full_data = null;
 const VALUES_URL = "records.json";
 const TIME_OFFSET = 9;
 
+const TABLE_TEMPLATE = "<span class='name'>${name}</span> wrote " +
+	"<span class='words'>${words}</span> words " +
+	"<span class='pace-text'>(<span class='pace'>${pace}</span> words/day)</span>";
+
 function fetch_values(post_func) {
 	fetch(VALUES_URL, {cache: 'no-store'})
 		.then(function(res) { return res.json(); })
@@ -78,8 +82,56 @@ function filter_values(data, selector) {
 }
 
 function draw_detail(data) {
-	let elem = document.getElementById('detail');
-	// FIXME: implement
+
+	let elem = document.getElementById('records');
+
+	if(elem.childElementCount <= 0) {
+		for(let i = 0; i < data["records"].length; i += 1) {
+			let e = document.createElement('div');
+			e.classList.add('single-record');
+			elem.appendChild(e);
+		}
+	}
+
+	document.getElementById("member-count").textContent = data["records"].length.toString();
+
+	// FIXME: this function asserts data["record_points"] is already sorted
+
+	for(let r_idx = 0; r_idx < data["records"].length; r_idx += 1) {
+
+		let record = data["records"][r_idx];
+		let name = record["name"];
+		let values = record["values"];
+		let min_idx = values.findIndex((v) => v !== null);
+		let max_idx = (values.length - 1) - values.slice().reverse().findIndex((v) => v !== null);
+
+		let words_text = "N/A";
+		let pace_text = "N/A";
+
+		let is_empty = (min_idx < 0)
+
+		if(!is_empty && min_idx !== max_idx) {
+			let time_delta = data["record_points"][max_idx] - data["record_points"][min_idx];
+			let word_delta = values[max_idx] - values[min_idx];
+			let word_per_sec = word_delta / time_delta;
+			let word_per_day = word_per_sec * 60 * 60 * 24;
+			let pace_rounded = Math.round(word_per_day * 10) / 10;
+			pace_text = pace_rounded.toString();
+		}
+		if(!is_empty) {
+			words_text = values[max_idx].toString();
+		}
+
+		let vars = [["${words}", words_text], ["${pace}", pace_text], ["${name}", name]];
+		let html = TABLE_TEMPLATE;
+
+		for(let v of vars) {
+			html = html.replace(v[0], v[1]);
+		}
+
+		let ch_elem = elem.childNodes.item(r_idx);
+		ch_elem.innerHTML = html;
+	}
 }
 
 function draw_graph_async(data) {
