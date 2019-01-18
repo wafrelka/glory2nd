@@ -1,19 +1,6 @@
 var full_data = null;
 const VALUES_URL = "records.json";
-
-function str2date(s) {
-	const year = parseInt(s.substring(0, 4));
-	const month = parseInt(s.substring(5, 7)) - 1;
-	const day = parseInt(s.substring(8, 10));
-	const hour = parseInt(s.substring(11, 13));
-	const minute = parseInt(s.substring(14, 16));
-	const second = parseInt(s.substring(17, 19));
-	return new Date(year, month, day, hour, minute, second);
-}
-
-function between(cur, left, right) {
-	return (left <= cur) && (cur <= right);
-}
+const TIME_OFFSET = 9;
 
 function fetch_values(post_func) {
 	fetch(VALUES_URL, {cache: 'no-store'})
@@ -48,43 +35,43 @@ function update_tab_color(selector) {
 
 function filter_values(data, selector) {
 
-	const HOUR_IN_MS = 1000 * 60 * 60;
+	const HOUR_IN_SEC = 60 * 60;
+	const MARGIN = 10 * 60;
 
-	let all_point_dates = data['record_points'].map(s => str2date(s));
-	let all_deadline_dates = data['deadlines'].map(d => str2date(d['at']));
+	let all_point_dates = data['record_points'];
+	let all_deadline_dates = data['deadlines'].map(d => d['at']);
 	let all_dates = all_point_dates.concat(all_deadline_dates);
 
-	let latest_point_date = new Date(Math.max.apply(null, all_point_dates));
-	let latest_date = new Date(Math.max.apply(null, all_dates));
-	let oldest_date = new Date(Math.min.apply(null, all_dates));
+	let latest_point_date = Math.max.apply(null, all_point_dates);
+	let latest_date = Math.max.apply(null, all_dates);
+	let oldest_date = Math.min.apply(null, all_dates);
 
 	let min_date = null;
 	let max_date = null;
 
 	if(selector == "#day") {
-		min_date = latest_point_date - HOUR_IN_MS * (24 + 1);
-		max_date = latest_point_date - (-HOUR_IN_MS) * 1;
+		min_date = latest_point_date - 24 * HOUR_IN_SEC;
+		max_date = latest_point_date;
 	} else if(selector == "#week") {
-		min_date = latest_point_date - HOUR_IN_MS * 24 * (7 + 1);
-		max_date = latest_point_date - (-HOUR_IN_MS) * 24 * 1;
+		min_date = latest_point_date - 7 * 24 * HOUR_IN_SEC;
+		max_date = latest_point_date;
 	} else {
-		min_date = oldest_date - HOUR_IN_MS * 24;
-		max_date = latest_date - (-HOUR_IN_MS) * 24;
+		min_date = oldest_date;
+		max_date = latest_date;
 	}
 
-	min_date = new Date(min_date);
-	max_date = new Date(max_date);
+	function is_ok(d) {
+		return (min_date - MARGIN) < d && d < (max_date + MARGIN);
+	}
 
 	let filtered = {
 		"records": data["records"].map(r =>
 			({
 				"name": r["name"],
-				"values": r["values"].filter((v, idx) =>
-					between(str2date(data["record_points"][idx]), min_date, max_date)
-				),
+				"values": r["values"].filter((v, idx) => is_ok(data["record_points"][idx])),
 			})),
-		"record_points": data["record_points"].filter(p => between(str2date(p), min_date, max_date)),
-		"deadlines": data["deadlines"].filter(d => between(str2date(d["at"]), min_date, max_date)),
+		"record_points": data["record_points"].filter(p => is_ok(p)),
+		"deadlines": data["deadlines"].filter(d => is_ok(d["at"])),
 	};
 
 	return filtered;
@@ -111,7 +98,7 @@ function draw_graph(data) {
 
 	for(let idx = 0; idx < data['record_points'].length; idx += 1) {
 
-		let now = str2date(data['record_points'][idx]);
+		let now = data['record_points'][idx];
 		let annotation = null;
 
 		for(let d of data['deadlines']) {
@@ -121,7 +108,7 @@ function draw_graph(data) {
 			}
 		}
 
-		let row = [now, annotation];
+		let row = [new Date(now * 1000), annotation];
 
 		for(let item of data['records']) {
 			row.push(item['values'][idx]);
@@ -130,24 +117,22 @@ function draw_graph(data) {
 		table.addRow(row);
 	}
 
-	let all_dates =
-		data['record_points']
-		.concat(data['deadlines'].map(d => d['at']))
-		.map(s => str2date(s));
-
-	let HOUR_IN_MS = 1000 * 60 * 60;
-	let min_date = new Date(Math.min.apply(null, all_dates));
-	let max_date = new Date(Math.max.apply(null, all_dates) + HOUR_IN_MS * 6);
-
 	for(let d of data['deadlines']) {
 		if(data['record_points'].findIndex(function(elem){ return elem == d['at']; }) < 0) {
-			row = [str2date(d['at']), "deadline (" + d['name'] + ")"];
+			row = [new Date(d['at'] * 1000), "deadline (" + d['name'] + ")"];
 			for(let item of data['records']) {
 				row.push(null);
 			}
 			table.addRow(row);
 		}
 	}
+
+	let all_dates =
+		data['record_points']
+		.concat(data['deadlines'].map(d => d['at']));
+
+	let min_date = new Date(Math.min.apply(null, all_dates) * 1000);
+	let max_date = new Date(Math.max.apply(null, all_dates) * 1000);
 
 	let max_words = 0;
 	for(let item of data['records']) {
@@ -180,7 +165,7 @@ function draw_graph(data) {
 
 	let date_formatter = new google.visualization.DateFormat({
 		pattern: "yyyy/MM/dd HH:mm",
-		timeZone: 9,
+		timeZone: TIME_OFFSET,
 	});
 	date_formatter.format(table, 0);
 	chart.draw(table, options);

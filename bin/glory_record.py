@@ -1,6 +1,27 @@
 import sys, os.path, tempfile, shutil, datetime, json, traceback
 from glory_count import count_words
 
+class FixedOffset(datetime.tzinfo):
+	def __init__(self, offset, name):
+		self.__offset = datetime.timedelta(hours = offset)
+		self.__name = name
+	def utcoffset(self, dt):
+		return self.__offset
+	def tzname(self, dt):
+		return self.__name
+	def dst(self, dt):
+		return datetime.timedelta(0)
+
+TIME_FORMAT = r"%Y-%m-%dT%H:%M:%S"
+TIMEZONE = FixedOffset(+9, "JST")
+UNIX_EPOCH = datetime.datetime(1970, 1, 1).replace(tzinfo=FixedOffset(0, "UTC"))
+
+def parse_datetime(text):
+	return datetime.datetime.strptime(text, TIME_FORMAT).replace(tzinfo=TIMEZONE)
+
+def unixtime(dt):
+	return int((dt - UNIX_EPOCH).total_seconds())
+
 def load_config(conf_path):
 
 	if not os.path.isfile(conf_path):
@@ -18,25 +39,21 @@ def load_config(conf_path):
 			if separator != ' ':
 				raise Exception("config file is broken (path: '%s')" % conf_path)
 			if key.endswith(':'):
-				deadlines.append((key[0:-1], value))
+				deadlines.append((key[0:-1], parse_datetime(value)))
 			else:
 				targets.append((key, value))
 
 	return (deadlines, targets)
 
 def format_record(now, name, words):
-	return "%s %s %s" % (now.replace(microsecond=0).isoformat(), name, words)
+	return "%s %s %s" % (now.replace(microsecond=0).strftime(TIME_FORMAT), name, words)
 
-# returns `now` as a string
 def parse_record(txt):
-	now, sep1, rem = txt.partition(' ')
+	dt, sep1, rem = txt.partition(' ')
 	name, sep2, words = rem.partition(' ')
 	if sep1 != ' ' or sep2 != ' ':
 		raise Exception("record is broken")
-	return (now, name, int(words))
-
-def parse_datetime(text):
-	return datetime.datetime.strptime(text, '%Y-%m-%dT%H:%M:%S')
+	return (parse_datetime(dt), name, int(words))
 
 def append_records(records_path, new_records):
 
@@ -77,13 +94,13 @@ def load_records(records_path):
 
 def save_json_file(json_path, records, deadlines):
 
-	record_points = sorted(set(now for now, _, _ in records))
+	record_points = sorted(set(unixtime(now) for now, _, _ in records))
 	names = sorted(set(name for _, name, _ in records))
-	record_dict = dict([((now, name), words) for now, name, words in records])
+	record_dict = dict([((unixtime(now), name), words) for now, name, words in records])
 
 	obj = {
-		'deadlines': sorted([{ 'name': d[0], 'at': d[1] } for d in deadlines]),
-		'record_points': sorted(record_points),
+		'deadlines': sorted([{ 'name': d[0], 'at': unixtime(d[1]) } for d in deadlines]),
+		'record_points': record_points,
 		'records': [{
 			'name': name,
 			'values': [record_dict.get((pt, name), None) for pt in record_points]
@@ -95,12 +112,12 @@ def save_json_file(json_path, records, deadlines):
 
 def main(config_path, records_path, json_path):
 
-	now = datetime.datetime.now()
+	now = datetime.datetime.now(tz=TIMEZONE)
 	deadlines, targets = load_config(config_path)
 	new_records = []
 
 	# stop counting	if the all deadlines are over
-	if len(deadlines) > 0 and max(map(lambda d: parse_datetime(d[1]), deadlines)) < now:
+	if len(deadlines) > 0 and (max(map(lambda d: d[1], deadlines)) + datetime.timedelta(minutes=5) < now):
 		return
 
 	for name, path in targets:
