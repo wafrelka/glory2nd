@@ -146,6 +146,7 @@ function draw_graph(data) {
 	table.addColumn({type: 'string', role: 'annotation'});
 	for(let item of data['records']) {
 		table.addColumn('number', item['name']);
+		table.addColumn({type: 'string', role: 'style'});
 	}
 
 	for(let idx = 0; idx < data['record_points'].length; idx += 1) {
@@ -163,7 +164,15 @@ function draw_graph(data) {
 		let row = [new Date(now * 1000), annotation];
 
 		for(let item of data['records']) {
+			let mid = false;
+			if(idx - 1 >= 0 && idx + 1 < data['record_points'].length) {
+				let p1 = item['values'][idx - 1];
+				let p2 = item['values'][idx];
+				let p3 = item['values'][idx + 1];
+				mid = (p1 === p2) && (p2 === p3) && (p2 !== null);
+			}
 			row.push(item['values'][idx]);
+			row.push(mid ? null : 'point { size: 3; }');
 		}
 
 		table.addRow(row);
@@ -173,6 +182,7 @@ function draw_graph(data) {
 		if(data['record_points'].findIndex(function(elem){ return elem == d['at']; }) < 0) {
 			row = [new Date(d['at'] * 1000), "deadline (" + d['name'] + ")"];
 			for(let item of data['records']) {
+				row.push(null);
 				row.push(null);
 			}
 			table.addRow(row);
@@ -205,7 +215,7 @@ function draw_graph(data) {
 		},
 		legend: { position: 'right'},
 		lineWidth: 2,
-		pointSize: 2,
+		pointSize: 1,
 		chartArea: { left: '10%', top: '5%', right: '20%', bottom: '10%' },
 		fontSize: 16,
 		backgroundColor: { fill: 'transparent' },
