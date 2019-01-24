@@ -13,11 +13,13 @@
     - 実行ユーザーは以下の条件が揃っていれば OK
         - `${glory_path}` の読み込み権限を有すること
         - `${GLORY_DEST_USER}:${GLORY_DEST_DIR}` の書き込み権限を有すること
-        - `sudo python2 ${glory_path}/bin/glory_record.py ...` を root 権限で実行できること
+        - `sudo python2 ${glory_path}/bin/glory_record.py ...` により `glory_record.py` を root 権限で実行できること
 
 ## `glory_record.py`
 
 `glory_record.py` は他のユーザーの所有するファイルについてワード数カウントを行うため root 権限が必要になる．
+
+本当は `sudo` を使わずに済ませたかったが……
 
 ## `glory-cron.sh` の動作
 
