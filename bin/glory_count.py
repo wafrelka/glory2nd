@@ -1,4 +1,5 @@
-import subprocess, re, os.path, os
+#!/usr/bin/env python2
+import subprocess, re, os.path, os, sys
 
 def parse_tex_file(tex_path, root_dir):
 
@@ -108,3 +109,10 @@ def count_words(root_tex_path):
 		return w
 
 	return count(root_tex_path, [])
+
+if __name__ == '__main__':
+
+	paths = sys.argv[1:]
+	for p in paths:
+		w = count_words(p)
+		print "%s: %s words" % (p, w)
