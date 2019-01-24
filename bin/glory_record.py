@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import sys, os.path, tempfile, shutil, datetime, json, traceback
 from glory_count import count_words
 
