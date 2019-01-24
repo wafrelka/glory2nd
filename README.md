@@ -11,13 +11,17 @@
 1. `crontab -e`
     - `${glory_path}/glory-cron.sh` を適切な間隔で実行するように設定する．
     - 実行ユーザーは以下の条件が揃っていれば OK
-        - `${glory_path}` への書き込み権限を有すること
-        - `${GLORY_DEST_USER}:${GLORY_DEST_DIR}` への書き込み権限を有すること
-        - `sudo python2 ...` を root 権限で実行できること
+        - `${glory_path}` の読み込み権限を有すること
+        - `${GLORY_DEST_USER}:${GLORY_DEST_DIR}` の書き込み権限を有すること
+        - `sudo python2 ${glory_path}/bin/glory_record.py ...` を root 権限で実行できること
+
+## `glory_record.py`
+
+`glory_record.py` は他のユーザーの所有するファイルについてワード数カウントを行うため root 権限が必要になる．
 
 ## `glory-cron.sh` の動作
 
-1. `${glory_path}/bin/glory_record.py` を root 権限で実行する
+1. `sudo python2 ${glory_path}/bin/glory_record.py` を実行する
     1. `${glory_path}/data/records.txt` に原本データを保存する
-    1. `${glory_path}/data/records.txt` をもとに `data/records.json` を生成する
+    1. `${glory_path}/data/records.txt` をもとに `${glory_path}/data/records.json` を生成する
 1. `${glory_path}/data/records.json`, `${glory_path}/html/glory-online.{html,css,js}` を `scp` により `${GLORY_DEST_USER}:${GLORY_DEST_DIR}` にコピーする
