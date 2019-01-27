@@ -20,7 +20,7 @@ def parse_tex_file(tex_path, root_dir):
 		(r'[\{\}\$\-\+\(\)\.\[\]\&\=\<\>\,]+', r' '),
 	]
 
-	with open(tex_path) as fp:
+	with open(tex_path, 'r') as fp:
 
 		enabled = True
 
