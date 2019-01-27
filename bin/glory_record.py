@@ -126,12 +126,14 @@ def main(config_path, records_path, json_path):
 
 	for name, path in targets:
 		try:
-			words = count_words(path)
+			words, missing_files = count_words(path)
 		except Exception as exc:
 			sys.stderr.write(traceback.format_exc())
 			sys.stderr.write("warning: word counting is failed (path: '%s')\n" % path)
 			continue
 		new_records.append((now, name, words))
+		if len(missing_files) > 0:
+			sys.stderr.write("warning: some imported files are missing (path: '%s')\n" % path)
 
 	append_records(records_path, new_records)
 

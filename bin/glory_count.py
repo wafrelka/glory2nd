@@ -85,6 +85,7 @@ def count_words(root_tex_path):
 	root_dir = os.path.dirname(root_tex_path)
 	unchecked = [root_tex_path]
 	texs = {}
+	missing_files = []
 
 	while len(unchecked) > 0:
 
@@ -92,7 +93,11 @@ def count_words(root_tex_path):
 		if path in texs:
 			continue
 
-		tex = parse_tex_file(path, root_dir)
+		if os.path.exists(path):
+			tex = parse_tex_file(path, root_dir)
+		else:
+			tex = (0, [])
+			missing_files.append(path)
 		texs[path] = tex
 
 		for dep in tex[1]:
@@ -108,11 +113,15 @@ def count_words(root_tex_path):
 		assert(stack.pop() == cur)
 		return w
 
-	return count(root_tex_path, [])
+	return (count(root_tex_path, []), missing_files)
 
 if __name__ == '__main__':
 
 	paths = sys.argv[1:]
 	for p in paths:
-		w = count_words(p)
-		print "%s: %s words" % (p, w)
+		words, missing_files = count_words(p)
+		print "%s: %s words" % (p, words)
+		if len(missing_files) > 0:
+			print "  warning: some files are missing"
+			for m in missing_files:
+				print "  * %s" % m
