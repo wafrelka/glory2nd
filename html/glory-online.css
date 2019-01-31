@@ -3,7 +3,7 @@ body { width: 100%; height: 100%; background-color: rgb(255, 255, 255); font-siz
 
 #header-background { width: 100%; background-color: rgb(254, 223, 225); }
 #header { width: 56rem; height: 4rem; margin: 0 auto; display: flex; flex-direction: row; align-items: center; padding: 0.5rem; box-sizing: border-box; }
-h1 { font-size: 32px; color: rgb(208, 16, 76); }
+h1 { font-size: 34px; color: rgb(208, 16, 76); }
 #tabs { margin-left: 0.8rem; font-size: 24px; color: rgb(190, 173, 165); }
 #tabs a { color: rgb(5, 5, 5); font-size: 24px; text-decoration: none; }
 #tabs a.hidden-tab { color: rgb(190, 173, 165); }
