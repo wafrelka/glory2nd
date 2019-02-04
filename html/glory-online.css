@@ -1,5 +1,5 @@
 * { margin: 0; padding: 0; }
-body { width: 100%; height: 100%; background-color: rgb(255, 255, 255); font-size: 16px; line-height: 1.4; font-family: 'Roboto', sans-serif; }
+body { min-width: 56rem; background-color: rgb(255, 255, 255); font-size: 16px; line-height: 1.4; font-family: 'Roboto', sans-serif; }
 
 #header-background { width: 100%; background-color: rgb(254, 223, 225); }
 #header { width: 56rem; height: 4rem; margin: 0 auto; display: flex; flex-direction: row; align-items: center; padding: 0.5rem; box-sizing: border-box; }
