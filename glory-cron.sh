@@ -34,7 +34,7 @@ mkdir -p "$(dirname "$records_path")"
 mkdir -p "$(dirname "$records_json_path")"
 
 echo "generating records..."
-sudo python2 "./bin/glory_record.py" "$config_path" "$records_path" "$records_json_path"
+sudo "./bin/glory_record.py" "$config_path" "$records_path" "$records_json_path"
 echo "generated"
 
 echo "transferring files..."

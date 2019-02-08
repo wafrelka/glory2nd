@@ -19,7 +19,7 @@
         - `${config_path}` の read 権限を有すること
         - `${data_dir}` の read/write 権限を有すること
         - `${scp_dest}` の write 権限を有すること
-        - `sudo python2 ${glory_path}/bin/glory_record.py ...` により `glory_record.py` を root 権限で実行できること
+        - `sudo ${glory_path}/bin/glory_record.py ...` により `glory_record.py` を root 権限で実行できること
 
 ## `glory_record.py`
 
@@ -27,9 +27,11 @@
 
 本当は `sudo` を使わずに済ませたかったが……
 
+`${glory_path}/bin/glory_record.py` の実行時のみ `sudo` できるようにすると多少はマシ．
+
 ## `glory-cron.sh` の動作
 
-1. `sudo python2 ${glory_path}/bin/glory_record.py` を実行する
+1. `sudo ${glory_path}/bin/glory_record.py` を実行する
     1. `${data_dir}/records.txt` に原本データを保存する
     1. `${data_dir}/records.txt` をもとに `${data_dir}/records.json` を生成する
 1. `${data_dir}/records.json`, `${glory_path}/html/glory-online.{html,css,js}` を `scp` により `${scp_dest}` 以下にコピーする
