@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-import sys, os.path, tempfile, shutil, datetime, json, traceback
+import sys, os, os.path, tempfile, shutil, datetime, json, traceback
 from glory_count import count_words
 
 class FixedOffset(datetime.tzinfo):
@@ -77,7 +77,9 @@ def append_records(records_path, new_records):
 		shutil.copy2(records_path, tmp_path)
 
 	with open(tmp_path, 'a') as f:
-			f.write(txt)
+		f.write(txt)
+		f.flush()
+		os.fsync(f.fileno())
 
 	# os.rename is atomic
 	os.rename(tmp_path, records_path)
