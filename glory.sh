@@ -32,3 +32,5 @@ cp "html/glory-online.css" "$files_path"
 cp "html/glory-online.js" "$files_path"
 rsync -av "$files_path/" "$scp_dest"
 echo "===> transferred"
+
+rm -r "$files_path"
