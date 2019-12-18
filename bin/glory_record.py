@@ -136,7 +136,8 @@ def update_and_pack_records(config_path):
 
 	# stop counting	if the all deadlines are over
 	if len(deadlines) > 0 and (max(map(lambda d: d[1], deadlines)) + datetime.timedelta(minutes=5) < now):
-		return
+		all_records = load_records(records_path)
+		return pack_all_records(all_records, deadlines)
 
 	for name, path in targets:
 		try:
