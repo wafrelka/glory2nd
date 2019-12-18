@@ -1,6 +1,10 @@
-# <deadline_name>: <yyyy>-<MM>-<dd>T<HH>:<mm>:<ss>
-bachelor: 2019-02-01T15:00:00
-master: 2019-01-30T15:00:00
+# deadline/<deadline_name> = <yyyy>-<MM>-<dd>T<HH>:<mm>:<ss>
+deadline/bachelor = 2019-02-01T15:00:00
+deadline/master = 2029-01-30T15:00:00
 
-# <user_name> <path/to/thesis.tex>
-wafrelka /home/wafrelka/grad_thesis/thesis.tex
+# target/<user_name> = <path/to/thesis.tex>
+target/wafrelka = /home/wafrelka/grad_thesis/thesis.tex
+
+# path/records = /path/to/records.txt
+# NOTE: A relative path is interpreted as it's relative to *THIS* config file itself.
+path/records = records.txt

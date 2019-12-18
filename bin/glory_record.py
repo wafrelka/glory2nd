@@ -31,23 +31,21 @@ def load_config(conf_path):
 	if not os.path.isfile(conf_path):
 		raise Exception("config file cannot be found (path: '%s')" % conf_path)
 
-	deadlines = []
-	targets = []
+	items = dict()
 
 	with open(conf_path, 'r') as f:
 		for line in f:
 			line = line.strip()
 			if line.startswith('#') or len(line) == 0:
 				continue
-			key, separator, value = line.rstrip().partition(' ')
-			if separator != ' ':
+			key, separator, value = line.strip().partition('=')
+			if separator != '=':
 				raise Exception("config file is broken (path: '%s')" % conf_path)
-			if key.endswith(':'):
-				deadlines.append((key[0:-1], parse_datetime(value)))
-			else:
-				targets.append((key, value))
+			key = key.strip()
+			value = value.strip()
+			items[key] = value
 
-	return (deadlines, targets)
+	return items
 
 def format_record(now, name, words):
 	return "%s %s %s" % (now.replace(microsecond=0).strftime(TIME_FORMAT), name, words)
@@ -98,7 +96,7 @@ def load_records(records_path):
 
 	return records
 
-def save_json_file(json_path, records, deadlines):
+def pack_all_records(records, deadlines):
 
 	record_points = sorted(set(unixtime(now) for now, _, _ in records))
 	names = sorted(set(name for _, name, _ in records))
@@ -113,13 +111,27 @@ def save_json_file(json_path, records, deadlines):
 		} for name in names]
 	}
 
-	with open(json_path, 'w') as f:
-		json.dump(obj, f)
+	return obj
 
-def main(config_path, records_path, json_path):
+def update_and_pack_records(config_path):
 
 	now = datetime.datetime.now(tz=TIMEZONE)
-	deadlines, targets = load_config(config_path)
+	config = load_config(config_path)
+
+	records_path = config["path/records"]
+	if not os.path.isabs(records_path):
+		config_dir = os.path.dirname(config_path)
+		records_path = os.path.realpath(os.path.join(config_dir, records_path))
+
+	deadlines = []
+	targets = []
+
+	for key, value in config.items():
+		if key.startswith("deadline/"):
+			deadlines.append((key.partition("/")[2], parse_datetime(value)))
+		elif key.startswith("target/"):
+			targets.append((key.partition("/")[2], value))
+
 	new_records = []
 
 	# stop counting	if the all deadlines are over
@@ -140,16 +152,14 @@ def main(config_path, records_path, json_path):
 	append_records(records_path, new_records)
 
 	all_records = load_records(records_path)
-	save_json_file(json_path, all_records, deadlines)
+	return pack_all_records(all_records, deadlines)
 
 if __name__ == '__main__':
 
-	if len(sys.argv) < 4:
-		sys.stderr.write("usage: %s <config_path> <records_path> <json_path>\n" % sys.argv[0])
+	if len(sys.argv) < 2:
+		sys.stderr.write("usage: %s <config_path>\n" % sys.argv[0])
 		exit(1)
 
 	config_path = sys.argv[1]
-	records_path = sys.argv[2]
-	json_path = sys.argv[3]
-
-	main(config_path, records_path, json_path)
+	packed = update_and_pack_records(config_path)
+	print '%s' % json.dumps(packed)
