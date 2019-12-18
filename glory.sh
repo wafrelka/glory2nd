@@ -18,6 +18,7 @@ echo "===> config_path = $config_path, scp_destination = $scp_dest"
 
 files_path="$(mktemp -d)"
 work_dir="$(dirname "$0")"
+chmod 755 "$files_path"
 
 cd "$work_dir"
 
