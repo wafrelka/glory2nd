@@ -8,3 +8,6 @@ target/wafrelka = /home/wafrelka/grad_thesis/thesis.tex
 # path/records = /path/to/records.txt
 # NOTE: A relative path is interpreted as it's relative to *THIS* config file itself.
 path/records = records.txt
+
+# goal = <goal_word_count>
+goal = 8000

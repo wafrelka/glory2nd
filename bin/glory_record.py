@@ -96,7 +96,7 @@ def load_records(records_path):
 
 	return records
 
-def pack_all_records(records, deadlines):
+def pack_all_records(records, deadlines, goal):
 
 	record_points = sorted(set(unixtime(now) for now, _, _ in records))
 	names = sorted(set(name for _, name, _ in records))
@@ -108,7 +108,8 @@ def pack_all_records(records, deadlines):
 		'records': [{
 			'name': name,
 			'values': [record_dict.get((pt, name), None) for pt in record_points]
-		} for name in names]
+		} for name in names],
+		'goal': goal,
 	}
 
 	return obj
@@ -125,12 +126,15 @@ def update_and_pack_records(config_path):
 
 	deadlines = []
 	targets = []
+	goal = None
 
 	for key, value in config.items():
 		if key.startswith("deadline/"):
 			deadlines.append((key.partition("/")[2], parse_datetime(value)))
 		elif key.startswith("target/"):
 			targets.append((key.partition("/")[2], value))
+		elif key == "goal":
+			goal = int(value)
 
 	new_records = []
 
@@ -153,7 +157,7 @@ def update_and_pack_records(config_path):
 	append_records(records_path, new_records)
 
 	all_records = load_records(records_path)
-	return pack_all_records(all_records, deadlines)
+	return pack_all_records(all_records, deadlines, goal)
 
 if __name__ == '__main__':
 

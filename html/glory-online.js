@@ -67,6 +67,7 @@ function filter_values(data, selector) {
 			})),
 		record_points: data.record_points.filter(p => is_ok(p)),
 		deadlines: data.deadlines.filter(d => is_ok(d.at)),
+		goal: data.goal,
 	};
 
 	return filtered;
@@ -192,6 +193,9 @@ function draw_graph(data) {
 		max_words = Math.max(max_words, ...(record.values));
 	}
 	let max_words_ceiled = Math.ceil(max_words / 1000.0 + 1) * 1000.0;
+	if(data.goal !== null) {
+		max_words_ceiled = Math.max(max_words_ceiled, data.goal);
+	}
 	let word_ticks = Math.round(max_words_ceiled / 1000.0) + 1;
 
 	const options = {
