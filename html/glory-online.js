@@ -236,12 +236,9 @@ function draw_graph(data) {
 google.charts.load('current', {packages: ['corechart']});
 document.addEventListener("DOMContentLoaded", function(event) {
 	fetch_values(function(){show_values(location.hash);});
-	let links = document.querySelectorAll("#tabs a");
-	for (l of links) {
-		l.addEventListener("click", function(ev) {
-			update_tab_color(ev.target.hash);
-			show_values(ev.target.hash);
-		});
-	}
+	window.addEventListener("hashchange", () => {
+		update_tab_color(location.hash);
+		show_values(location.hash);
+	});
 	update_tab_color(location.hash);
 });
