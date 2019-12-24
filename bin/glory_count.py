@@ -22,6 +22,8 @@ def parse_tex_file(tex_path, root_dir):
 
 	with open(tex_path, 'r') as fp:
 
+		# Glory2nd excludes 'eabstract' in word counting
+		# different from original Glory ('word-count.pl')
 		excluded_sections = ['jabstract', 'eabstract']
 		section_states = dict(map(lambda e: (e, False), excluded_sections))
 
@@ -68,13 +70,13 @@ def parse_tex_file(tex_path, root_dir):
 				if '%' in before:
 					continue
 
-				# different from 'word-count.pl'
-				# original: '.tex' not in path
+				# Glory2nd supports auto '.tex' extension completion
+				# different from original Glory ('word-count.pl')
 				if not path.endswith('.tex'):
 					path = path + '.tex'
 
-				# different from 'word-count.pl'
-				# original: expand `path` even if it is absolute
+				# Glory2nd supports absolute paths
+				# different from original Glory ('word-count.pl')
 				if not os.path.isabs(path):
 					path = os.path.realpath(os.path.join(root_dir, path))
 
