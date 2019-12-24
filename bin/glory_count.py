@@ -22,16 +22,19 @@ def parse_tex_file(tex_path, root_dir):
 
 	with open(tex_path, 'r') as fp:
 
-		enabled = True
+		excluded_sections = ['jabstract', 'eabstract']
+		section_states = dict(map(lambda e: (e, False), excluded_sections))
 
 		for line in fp:
 
-			if ('begin' in line) and ('jabstract' in line):
-				enabled = False
-			elif ('end' in line) and ('jabstract' in line):
-				enabled = True
+			for s in excluded_sections:
+				if s in line:
+					if 'begin' in line:
+						section_states[s] = True
+					if 'end' in line:
+						section_states[s] = False
 
-			if not enabled:
+			if any(section_states.values()):
 				continue
 
 			for pat in replace_patterns:
