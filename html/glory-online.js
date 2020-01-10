@@ -6,6 +6,21 @@ const TABLE_TEMPLATE = "<span class='name'>${name}</span> wrote " +
 	"<span class='words'>${words}</span> words " +
 	"<span class='pace-text'>(<span class='pace'>${pace}</span> words/day)</span>";
 
+function format_date(date) {
+
+	if(date === null) {
+		return "N/A";
+	}
+
+	let yyyy = date.getFullYear();
+	let mo = date.getMonth() + 1;
+	let dd = date.getDate();
+	let hh = date.getHours();
+	let mm = date.getMinutes();
+
+	return `${yyyy}/${mo}/${dd} ${hh}:${mm}`;
+}
+
 async function fetch_values() {
 	let resp = await fetch(VALUES_URL, { cache: 'no-store' });
 	let obj = await resp.json();
@@ -87,6 +102,11 @@ function draw_detail(data) {
 
 	let member_count_text = data.records.length.toString();
 	document.getElementById("member-count").textContent = member_count_text;
+
+	let last_updated_point = Math.max(0, ...data.record_points);
+	let last_updated = (last_updated_point === 0) ? null : new Date(last_updated_point * 1000);
+	let last_updated_text = format_date(last_updated);
+	document.getElementById("last-updated").textContent = last_updated_text;
 
 	// FIXME: this function assumes data.record_points is already sorted
 
