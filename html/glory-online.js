@@ -12,11 +12,14 @@ function format_date(date) {
 		return "N/A";
 	}
 
-	let yyyy = date.getFullYear();
-	let mo = date.getMonth() + 1;
-	let dd = date.getDate();
-	let hh = date.getHours();
-	let mm = date.getMinutes();
+	let pad2 = (n) => (n.toString().padStart(2, "0"));
+	let pad4 = (n) => (n.toString().padStart(4, "0"));
+
+	let yyyy = pad4(date.getFullYear());
+	let mo = pad2(date.getMonth() + 1);
+	let dd = pad2(date.getDate());
+	let hh = pad2(date.getHours());
+	let mm = pad2(date.getMinutes());
 
 	return `${yyyy}/${mo}/${dd} ${hh}:${mm}`;
 }
