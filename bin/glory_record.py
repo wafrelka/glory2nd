@@ -102,8 +102,11 @@ def pack_all_records(records, deadlines, goal):
 	names = sorted(set(name for _, name, _ in records))
 	record_dict = dict([((unixtime(now), name), words) for now, name, words in records])
 
+	deadlines = [{ 'name': d[0], 'at': unixtime(d[1]) } for d in deadlines]
+	deadlines_sorted = sorted(deadlines, key=lambda x: x['at'])
+
 	obj = {
-		'deadlines': sorted([{ 'name': d[0], 'at': unixtime(d[1]) } for d in deadlines]),
+		'deadlines': deadlines_sorted,
 		'record_points': record_points,
 		'records': [{
 			'name': name,

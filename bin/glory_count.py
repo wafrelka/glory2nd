@@ -42,7 +42,10 @@ def parse_tex_file(tex_path, root_dir):
 			for pat in replace_patterns:
 				line = re.sub(pat[0], pat[1], line)
 
-			wc_proc.stdin.write(line)
+			wc_txt = line
+			if sys.version_info[0] >= 3:
+				wc_txt = bytes(line, encoding='utf-8')
+			wc_proc.stdin.write(wc_txt)
 
 	wc_proc.stdin.close()
 	count = int(wc_proc.stdout.read())
