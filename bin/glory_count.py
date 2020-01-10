@@ -125,8 +125,8 @@ if __name__ == '__main__':
 	paths = sys.argv[1:]
 	for p in paths:
 		words, missing_files = count_words(p)
-		print "%s: %s words" % (p, words)
+		print("%s: %s words" % (p, words))
 		if len(missing_files) > 0:
-			print "  warning: some files are missing"
+			print("  warning: some files are missing")
 			for m in missing_files:
-				print "  * %s" % m
+				print("  * %s" % m)

@@ -167,4 +167,4 @@ if __name__ == '__main__':
 
 	config_path = sys.argv[1]
 	packed = update_and_pack_records(config_path)
-	print '%s' % json.dumps(packed)
+	print('%s' % json.dumps(packed))
