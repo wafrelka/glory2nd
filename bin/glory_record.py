@@ -31,7 +31,7 @@ def load_config(conf_path):
 	if not os.path.isfile(conf_path):
 		raise Exception("config file cannot be found (path: '%s')" % conf_path)
 
-	items = dict()
+	items = []
 
 	with open(conf_path, 'r') as f:
 		for line in f:
@@ -43,7 +43,7 @@ def load_config(conf_path):
 				raise Exception("config file is broken (path: '%s')" % conf_path)
 			key = key.strip()
 			value = value.strip()
-			items[key] = value
+			items.append((key, value))
 
 	return items
 
@@ -96,14 +96,16 @@ def load_records(records_path):
 
 	return records
 
-def pack_all_records(records, deadlines, goal):
+def pack_all_records(records, target_names, deadlines, goal):
 
 	record_points = sorted(set(unixtime(now) for now, _, _ in records))
-	names = sorted(set(name for _, name, _ in records))
 	record_dict = dict([((unixtime(now), name), words) for now, name, words in records])
 
 	deadlines = [{ 'name': d[0], 'at': unixtime(d[1]) } for d in deadlines]
 	deadlines_sorted = sorted(deadlines, key=lambda x: x['at'])
+
+	record_names = set(name for _, name, _ in records)
+	names = sorted(record_names & set(target_names), key=lambda x: target_names.index(x))
 
 	obj = {
 		'deadlines': deadlines_sorted,
@@ -120,7 +122,8 @@ def pack_all_records(records, deadlines, goal):
 def update_and_pack_records(config_path):
 
 	now = datetime.datetime.now(tz=TIMEZONE)
-	config = load_config(config_path)
+	config_list = load_config(config_path)
+	config = dict(config_list)
 
 	records_path = config["path/records"]
 	if not os.path.isabs(records_path):
@@ -131,13 +134,14 @@ def update_and_pack_records(config_path):
 	targets = []
 	goal = None
 
-	for key, value in config.items():
+	if "goal" in config:
+		goal = int(config["goal"])
+
+	for key, value in config_list:
 		if key.startswith("deadline/"):
 			deadlines.append((key.partition("/")[2], parse_datetime(value)))
 		elif key.startswith("target/"):
 			targets.append((key.partition("/")[2], value))
-		elif key == "goal":
-			goal = int(value)
 
 	new_records = []
 
@@ -160,7 +164,8 @@ def update_and_pack_records(config_path):
 	append_records(records_path, new_records)
 
 	all_records = load_records(records_path)
-	return pack_all_records(all_records, deadlines, goal)
+	target_names = list(map(lambda x: x[0], targets))
+	return pack_all_records(all_records, target_names, deadlines, goal)
 
 if __name__ == '__main__':
 
