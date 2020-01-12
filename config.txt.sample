@@ -11,3 +11,7 @@ path/records = records.txt
 
 # goal = <goal_word_count>
 goal = 8000
+
+# sudo = true/false
+# NOTE: When sudo is true, `glory_record.py` executes `glory_count.py` with `sudo`
+sudo = true
