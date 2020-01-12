@@ -128,7 +128,8 @@ def count_words(tex_path, sudo):
 	FNULL = open(os.devnull, 'w')
 
 	try:
-		w = subprocess.check_output(program, stderr=FNULL)
+		proc = subprocess.Popen(program, stdout=subprocess.PIPE, stderr=FNULL)
+		w, _ = proc.communicate()
 		if sys.version_info[0] >= 3:
 			w = w.decode('utf-8')
 		missing = w.startswith("!")
