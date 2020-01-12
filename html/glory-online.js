@@ -2,10 +2,6 @@ const VALUES_URL = "records.json";
 const TIME_OFFSET = 9;
 const TABLE_MARGIN_SEC = 10 * 60;
 
-const TABLE_TEMPLATE = "<span class='name'>${name}</span> wrote " +
-	"<span class='words'>${words}</span> words " +
-	"<span class='pace-text'>(<span class='pace'>${pace}</span> words/day)</span>";
-
 function format_date(date) {
 
 	if(date === null) {
@@ -94,13 +90,15 @@ function filter_values(data, selector) {
 function draw_detail(data) {
 
 	let list_elem = document.getElementById('records');
+	let template = document.querySelector("#single-record.template");
 
-	if(list_elem.childElementCount === 0) {
-		for(let _ of data.records) {
-			let e = document.createElement('div');
-			e.classList.add('single-record');
-			list_elem.appendChild(e);
-		}
+	for(e of document.querySelectorAll("#single-record:not(.template)")) {
+		e.parentNode.removeChild(e);
+	}
+	for(let _ of data.records) {
+		let e = template.cloneNode(true);
+		e.classList.remove("template");
+		list_elem.appendChild(e);
 	}
 
 	let member_count_text = data.records.length.toString();
@@ -116,7 +114,7 @@ function draw_detail(data) {
 	for(let record_idx = 0; record_idx < data.records.length; record_idx += 1) {
 
 		let record = data.records[record_idx];
-		let elem = list_elem.children.item(record_idx);
+		let elem = list_elem.children.item(record_idx + 1);
 
 		let name = record.name;
 		let values = record.values;
@@ -144,13 +142,18 @@ function draw_detail(data) {
 			["${pace}", pace_text],
 			["${name}", name],
 		];
-		let html = TABLE_TEMPLATE;
+		let f = (g, e, k, v) => {
+			if(e instanceof Text) {
+				e.textContent = e.textContent.replace(k, v);
+			}
+			for(let c of e.childNodes) {
+				g(g, c, k, v);
+			}
+		};
 
 		for(let v of vars) {
-			html = html.replace(v[0], v[1]);
+			f(f, elem, v[0], v[1]);
 		}
-
-		elem.innerHTML = html;
 	}
 }
 

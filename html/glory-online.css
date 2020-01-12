@@ -24,6 +24,7 @@ li.tab+li.tab { border-left: var(--color-text-light) solid 0.15rem; }
 #glory-top-text { font-size: 1.45rem; }
 #member-count { font-weight: bold; }
 #records { margin-top: 0.5rem; }
+.template { display: none; }
 .name { font-weight: bold; }
 .words { font-weight: bold; }
 .pace { font-weight: bold; }
