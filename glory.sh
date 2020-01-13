@@ -11,6 +11,7 @@ if [ "$#" -ne "2" ]; then
 	exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "$0")"; pwd)"
 config_path="$1"
 scp_dest="$2"
 
@@ -20,16 +21,14 @@ files_path="$(mktemp -d)"
 work_dir="$(dirname "$0")"
 chmod 755 "$files_path"
 
-cd "$work_dir"
-
 echo "===> generating records..."
-"./bin/glory_record.py" "$config_path" > "$files_path/records.json"
+"$SCRIPT_DIR/bin/glory_record.py" "$config_path" > "$files_path/records.json"
 echo "===> generated"
 
 echo "===> transferring files..."
-cp "html/glory-online.html" "$files_path"
-cp "html/glory-online.css" "$files_path"
-cp "html/glory-online.js" "$files_path"
+cp "$SCRIPT_DIR/html/glory-online.html" "$files_path"
+cp "$SCRIPT_DIR/html/glory-online.css" "$files_path"
+cp "$SCRIPT_DIR/html/glory-online.js" "$files_path"
 rsync -av "$files_path/" "$scp_dest"
 echo "===> transferred"
 
