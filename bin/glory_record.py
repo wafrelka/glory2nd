@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
-import sys, os, os.path, tempfile, shutil, datetime, json, traceback
-from glory_count import count_words
+import sys, os, os.path, tempfile, shutil, datetime, json, traceback, subprocess
 
 class FixedOffset(datetime.tzinfo):
 	def __init__(self, offset, name):
@@ -16,6 +15,7 @@ class FixedOffset(datetime.tzinfo):
 TIME_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 TIMEZONE = FixedOffset(+9, "JST")
 UNIX_EPOCH = datetime.datetime(1970, 1, 1).replace(tzinfo=FixedOffset(0, "UTC"))
+GLORY_COUNT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "glory_count.py"))
 
 def total_seconds(delta):
 	return (delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * 10**6) / 10**6
@@ -119,6 +119,27 @@ def pack_all_records(records, target_names, deadlines, goal):
 
 	return obj
 
+def count_words(tex_path, sudo):
+
+	program = [GLORY_COUNT_PATH, "--short", tex_path]
+	if sudo:
+		program = ["sudo"] + program
+
+	FNULL = open(os.devnull, 'w')
+
+	try:
+		proc = subprocess.Popen(program, stdout=subprocess.PIPE, stderr=FNULL)
+		w, _ = proc.communicate()
+		if sys.version_info[0] >= 3:
+			w = w.decode('utf-8')
+		missing = w.startswith("!")
+		if missing:
+			w = w[1:]
+		return (int(w.strip()), missing)
+	except Exception as exc:
+		sys.stderr.write(traceback.format_exc())
+		return (None, False)
+
 def update_and_pack_records(config_path):
 
 	now = datetime.datetime.now(tz=TIMEZONE)
@@ -133,9 +154,16 @@ def update_and_pack_records(config_path):
 	deadlines = []
 	targets = []
 	goal = None
+	sudo = False
 
 	if "goal" in config:
 		goal = int(config["goal"])
+	if "sudo" in config:
+		v = config["sudo"]
+		if v == "true" or v == "false":
+			sudo = (v == "true")
+		else:
+			raise Exception("unknown value for 'sudo': %s" % v)
 
 	for key, value in config_list:
 		if key.startswith("deadline/"):
@@ -151,15 +179,14 @@ def update_and_pack_records(config_path):
 		return pack_all_records(all_records, deadlines)
 
 	for name, path in targets:
-		try:
-			words, missing_files = count_words(path)
-		except Exception as exc:
-			sys.stderr.write(traceback.format_exc())
-			sys.stderr.write("warning: word counting is failed (path: '%s')\n" % path)
+		words, missing = count_words(path, sudo)
+		if words is None:
+			sys.stderr.write("warning: word counting failed (path: '%s')\n" % path)
 			continue
-		new_records.append((now, name, words))
-		if len(missing_files) > 0:
+		if missing:
 			sys.stderr.write("warning: some imported files are missing (path: '%s')\n" % path)
+
+		new_records.append((now, name, words))
 
 	append_records(records_path, new_records)
 

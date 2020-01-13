@@ -23,7 +23,7 @@ chmod 755 "$files_path"
 cd "$work_dir"
 
 echo "===> generating records..."
-sudo "./bin/glory_record.py" "$config_path" > "$files_path/records.json"
+"./bin/glory_record.py" "$config_path" > "$files_path/records.json"
 echo "===> generated"
 
 echo "===> transferring files..."

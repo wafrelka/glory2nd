@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-import subprocess, re, os.path, os, sys
+import subprocess, re, os.path, os, sys, traceback
 
 def parse_tex_file(tex_path, root_dir):
 
@@ -125,10 +125,32 @@ def count_words(root_tex_path):
 
 if __name__ == '__main__':
 
-	paths = sys.argv[1:]
+	short = False
+	paths = []
+
+	for a in sys.argv[1:]:
+		if a == "-s" or a == "--short":
+			short = True
+		else:
+			paths.append(a)
+
 	for p in paths:
-		words, missing_files = count_words(p)
-		print("%s: %s words" % (p, words))
+
+		try:
+			words, missing_files = count_words(p)
+		except Exception as exc:
+			sys.stderr.write(traceback.format_exc())
+			sys.stderr.write("exception occurred while parsing '%s'\n" % p)
+			continue
+
+		if short:
+			if len(missing_files) > 0:
+				print("!%d" % words)
+			else:
+				print("%d" % words)
+			continue
+
+		print("%s: %d words" % (p, words))
 		if len(missing_files) > 0:
 			print("  warning: some files are missing")
 			for m in missing_files:
