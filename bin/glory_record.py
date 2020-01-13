@@ -137,7 +137,7 @@ def count_words(tex_path, sudo):
 			w = w[1:]
 		return (int(w.strip()), missing)
 	except Exception as exc:
-		print(exc)
+		sys.stderr.write(traceback.format_exc())
 		return (None, False)
 
 def update_and_pack_records(config_path):
