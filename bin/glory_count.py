@@ -143,6 +143,10 @@ if __name__ == '__main__':
 			sys.stderr.write("exception occurred while parsing '%s'\n" % p)
 			continue
 
+		if os.path.realpath(p) in missing_files:
+			sys.stderr.write("cannot read the root tex file '%s'\n" % p)
+			continue
+
 		if short:
 			if len(missing_files) > 0:
 				print("!%d" % words)
