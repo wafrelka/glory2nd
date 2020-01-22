@@ -39,7 +39,7 @@ function update_tab_class(selector) {
 		l.classList.add('hidden-tab');
 	}
 
-	if(selector !== "#day" && selector !== "#week") {
+	if(selector !== "#day" && selector !== "#week" && selector !== "#half") {
 		selector = "#all";
 	}
 	let l = document.querySelector(`#tabs a[href=\"${selector}\"]`);
@@ -64,6 +64,9 @@ function filter_values(data, selector) {
 		max_point = latest_record_point;
 	} else if(selector == "#week") {
 		min_point = latest_record_point - 7 * 24 * 60 * 60;
+		max_point = latest_record_point;
+	} else if(selector == "#half") {
+		min_point = latest_record_point - 12 * 60 * 60;
 		max_point = latest_record_point;
 	} else {
 		min_point = oldest_point;
