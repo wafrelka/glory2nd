@@ -3,9 +3,10 @@ body { min-width: 56rem; background-color: rgb(255, 255, 255); font-size: 16px; 
 :root {
 	--color-main: rgb(208, 16, 76);
 	--color-back: rgb(254, 223, 225);
-	--color-text: rgb(5, 5, 5);
-	--color-text-dark: rgb(77, 67, 67);
-	--color-text-light: rgb(204, 180, 181);
+	--color-text-dark: rgb(5, 5, 5);
+	--color-text-light: rgb(105, 105, 105);
+	--color-title-dark: rgb(77, 67, 67);
+	--color-title-light: rgb(204, 180, 181);
 	--color-subtext: rgb(129, 127, 127);
 }
 
@@ -14,20 +15,22 @@ body { min-width: 56rem; background-color: rgb(255, 255, 255); font-size: 16px; 
 h1 { font-size: 2.3rem; color: var(--color-main); }
 #tabs { margin-left: 0.6rem; list-style: none; display: flex; flex-direction: row; }
 li.tab { padding: 0 0.5rem; line-height: 1.1; }
-li.tab a { font-size: 1.5rem; color: var(--color-text-dark); font-size: 1.5rem; text-decoration: none; }
-li.tab a.hidden-tab { color: var(--color-text-light); }
-li.tab+li.tab { border-left: var(--color-text-light) solid 0.15rem; }
+li.tab a { font-size: 1.5rem; color: var(--color-title-dark); font-size: 1.5rem; text-decoration: none; }
+li.tab a.hidden-tab { color: var(--color-title-light); }
+li.tab+li.tab { border-left: var(--color-title-light) solid 0.15rem; }
 
 #content { width: 56rem; margin: 2rem auto 0; display: flex; flex-direction: column; }
 #graph { width: 100%; height: 30rem; }
 #detail { width: 100%; display: flex; flex-direction: column; margin-top: 2rem; padding: 0.5rem; box-sizing: border-box; }
 #glory-top-text { font-size: 1.45rem; }
 #member-count { font-weight: bold; }
-#records { margin-top: 0.5rem; }
+#records { margin-top: 0.5rem; color: var(--color-text-dark); }
 .template { display: none; }
 .name { font-weight: bold; }
 .words { font-weight: bold; }
 .pace { font-weight: bold; }
+.diff { font-weight: bold; }
+.diff-outer { font-size: 0.7rem; color: var(--color-text-light); }
 #detail-memo { font-size: 0.6rem; color: var(--color-subtext); }
 
 .glory { font-weight: bold; color: var(--color-main); }

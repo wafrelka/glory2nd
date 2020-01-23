@@ -130,6 +130,7 @@ function draw_detail(data) {
 
 		let words_text = "N/A";
 		let pace_text = "N/A";
+		let diff_text = "N/A";
 
 		let is_empty = (min_idx < 0);
 
@@ -139,6 +140,10 @@ function draw_detail(data) {
 			let word_per_sec = word_delta / time_delta;
 			let word_per_day = word_per_sec * 24 * 60 * 60;
 			pace_text = word_per_day.toFixed(1);
+			diff_text = word_delta.toFixed(0);
+			if(word_delta > 0.5) {
+				diff_text = `+${diff_text}`;
+			}
 		}
 		if(!is_empty) {
 			words_text = values[max_idx].toString();
@@ -148,6 +153,7 @@ function draw_detail(data) {
 			["${words}", words_text],
 			["${pace}", pace_text],
 			["${name}", name],
+			["${diff}", diff_text],
 		];
 		let f = (g, e, k, v) => {
 			if(e instanceof Text) {
