@@ -2,6 +2,10 @@ const VALUES_URL = "records.json";
 const TIME_OFFSET = 9;
 const TABLE_MARGIN_SEC = 10 * 60;
 
+function to_hour(sec) {
+	return Math.floor(sec / 3600);
+}
+
 function format_date(date) {
 
 	if(date === null) {
@@ -162,63 +166,80 @@ function draw_detail(data) {
 
 function draw_graph(data) {
 
-	let table = new google.visualization.DataTable();
+	let records = data.records;
+	let points = data.record_points;
+	let deadlines = data.deadlines;
 
-	table.addColumn('date', 'date');
-	table.addColumn({type: 'string', role: 'annotation'});
-	for(let record of data.records) {
-		table.addColumn('number', record.name);
-		table.addColumn({type: 'string', role: 'style'});
-	}
-
-	for(let idx = 0; idx < data.record_points.length; idx += 1) {
-
-		let now = data.record_points[idx];
-		let annotation = null;
-		let mid = (idx - 1 >= 0 && idx + 1 < data.record_points.length);
-
-		let deadline = data.deadlines.find(d => (now === d.at));
-		if(deadline !== undefined) {
-			annotation = `deadline (${deadline.name})`;
-		}
-
-		let row = [new Date(now * 1000), annotation];
-
-		for(let record of data.records) {
-			let no_diff = false;
-			if(mid) {
-				let p1 = record.values[idx - 1];
-				let p2 = record.values[idx];
-				let p3 = record.values[idx + 1];
-				no_diff = (p1 === p2) && (p2 === p3) && (p2 !== null);
-			}
-			row.push(record.values[idx]);
-			row.push(no_diff ? 'point { size: 1; }' : null);
-		}
-
-		table.addRow(row);
-	}
-
-	for(let deadline of data.deadlines) {
-		let record = data.record_points.find(p => (p === deadline.at));
-		if(record === undefined) {
-			let row = [new Date(deadline.at * 1000), `deadline (${deadline.name})`];
-			for(let _ of data.records) {
-				row.push(null, null);
-			}
-			table.addRow(row);
-		}
-	}
-
-	let all_points = data.record_points.concat(data.deadlines.map(d => d.at));
+	let all_points = points.concat(deadlines.map(d => d.at));
 	let min_point = Math.min(...all_points);
 	let max_point = Math.max(...all_points);
 	if(min_point === max_point) {
 		min_point = max_point - 1;
 	}
 
+	let table = new google.visualization.DataTable();
+
+	table.addColumn('date', 'date');
+	table.addColumn({type: 'string', role: 'annotation'});
+	for(let r of records) {
+		table.addColumn('number', r.name);
+		table.addColumn({type: 'string', role: 'style'});
+	}
+
+	let emphasis_points = Array.from({length: records.length}, () => []);
+
+	for(let pos = 0; pos < points.length; pos += 1) {
+		for(let i = 0; i < records.length; i += 1) {
+			let xs = records[i].values;
+			let prev_diff = (pos == 0 || xs[pos - 1] !== xs[pos]);
+			let next_diff = (pos == (points.length - 1) || xs[pos + 1] !== xs[pos]);
+			emphasis_points[i].push(prev_diff || next_diff);
+		}
+	}
+
+	const ten_days = 10 * 24 * 60 * 60
+	const too_long = (max_point - min_point) > ten_days;
+
+	for(let pos = 0; pos < points.length; pos += 1) {
+
+		let now = points[pos];
+		let deadline = deadlines.find(d => (now === d.at));
+		let no_emphasis = emphasis_points.every((a) => !a[pos]);
+		let hour_border = (pos == 0) || (to_hour(points[pos]) != to_hour(points[pos - 1]));
+
+		let skip = (deadline === undefined && no_emphasis && (!hour_border && too_long));
+
+		if(skip) {
+			continue;
+		}
+
+		let annotation = null;
+		if(deadline !== undefined) {
+			annotation = `deadline (${deadline.name})`;
+		}
+		let row = [new Date(now * 1000), annotation];
+
+		for(let idx = 0; idx < records.length; idx += 1) {
+			row.push(records[idx].values[pos]);
+			row.push(emphasis_points[idx][pos] ? null : 'point { size: 0; }');
+		}
+
+		table.addRow(row);
+	}
+
+	for(let deadline of deadlines) {
+		let record = points.find(p => (p === deadline.at));
+		if(record === undefined) {
+			let row = [new Date(deadline.at * 1000), `deadline (${deadline.name})`];
+			for(let _ of records) {
+				row.push(null, null);
+			}
+			table.addRow(row);
+		}
+	}
+
 	let max_words = 0;
-	for(let record of data.records) {
+	for(let record of records) {
 		max_words = Math.max(max_words, ...(record.values));
 	}
 	let max_words_ceiled = Math.ceil(max_words / 1000.0 + 1) * 1000.0;
