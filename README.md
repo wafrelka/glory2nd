@@ -33,7 +33,6 @@ usage: `./bin/glory_count.py [--short] <path/to/thesis.tex>...`
 オリジナルの Glory (2018年以前に使われていたもの) とは以下の点で差異がある．
 
 - `eabstract` もワード数カウントから除外する
-- `input` や `include` の引数に `.tex` がついていないときに自動補完する
 - `input` や `include` の引数に絶対パスを許容する
 
 他のユーザーが所有するファイルについてワード数カウントを行うには適切な権限が必要となることに注意．

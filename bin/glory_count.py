@@ -73,8 +73,6 @@ def parse_tex_file(tex_path, root_dir):
 				if '%' in before:
 					continue
 
-				# Glory2nd supports auto '.tex' extension completion
-				# different from original Glory ('word-count.pl')
 				if not path.endswith('.tex'):
 					path = path + '.tex'
 
