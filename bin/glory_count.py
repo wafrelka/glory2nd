@@ -111,7 +111,7 @@ def count_words(root_tex_path, debug):
 			missing_files.append(path)
 		texs[path] = tex
 
-		for dep in tex[1]:
+		for dep in reversed(tex[1]):
 			unchecked.append(dep)
 
 	def count(cur, stack):
