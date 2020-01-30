@@ -24,16 +24,19 @@ def parse_tex_file(tex_path, root_dir):
 
 		# Glory2nd excludes 'eabstract' in word counting
 		# different from original Glory ('word-count.pl')
-		excluded_sections = ['jabstract', 'eabstract']
+		excluded_sections = [
+			'jabstract', 'eabstract',
+			'{table}', '{table*}',
+		]
 		section_states = dict(map(lambda e: (e, False), excluded_sections))
 
 		for line in fp:
 
 			for s in excluded_sections:
 				if s in line:
-					if 'begin' in line:
+					if '\\begin' in line:
 						section_states[s] = True
-					if 'end' in line:
+					if '\\end' in line:
 						section_states[s] = False
 
 			if any(section_states.values()):
