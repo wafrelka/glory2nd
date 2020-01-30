@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 import subprocess, re, os.path, os, sys, traceback
 
-def parse_tex_file(tex_path, root_dir):
+def parse_tex_file(tex_path, root_dir, debug):
 
 	FNULL = open(os.devnull, 'w')
 	wc_proc = subprocess.Popen(['wc', '-w'],
@@ -49,6 +49,8 @@ def parse_tex_file(tex_path, root_dir):
 			if sys.version_info[0] >= 3:
 				wc_txt = bytes(line, encoding='utf-8')
 			wc_proc.stdin.write(wc_txt)
+			if debug and line.strip() != "":
+				sys.stderr.write(line.strip() + "\n")
 
 	wc_proc.stdin.close()
 	count = int(wc_proc.stdout.read())
@@ -88,7 +90,7 @@ def parse_tex_file(tex_path, root_dir):
 
 	return (count, deps)
 
-def count_words(root_tex_path):
+def count_words(root_tex_path, debug):
 
 	root_tex_path = os.path.realpath(root_tex_path)
 	root_dir = os.path.dirname(root_tex_path)
@@ -103,7 +105,7 @@ def count_words(root_tex_path):
 			continue
 
 		if os.path.exists(path):
-			tex = parse_tex_file(path, root_dir)
+			tex = parse_tex_file(path, root_dir, debug)
 		else:
 			tex = (0, [])
 			missing_files.append(path)
@@ -126,19 +128,21 @@ def count_words(root_tex_path):
 
 if __name__ == '__main__':
 
-	short = False
+	short, debug = False, False
 	paths = []
 
 	for a in sys.argv[1:]:
 		if a == "-s" or a == "--short":
 			short = True
+		elif a == "-d" or a == "--debug":
+			debug = True
 		else:
 			paths.append(a)
 
 	for p in paths:
 
 		try:
-			words, missing_files = count_words(p)
+			words, missing_files = count_words(p, debug)
 		except Exception as exc:
 			sys.stderr.write(traceback.format_exc())
 			sys.stderr.write("exception occurred while parsing '%s'\n" % p)
